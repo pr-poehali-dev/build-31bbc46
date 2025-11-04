@@ -34,6 +34,16 @@ interface InventoryItem {
   image: string;
   isForSale?: boolean;
   salePrice?: number;
+  seller?: string;
+  sellerId?: number;
+  description?: string;
+}
+
+interface ChatMessage {
+  id: number;
+  sender: string;
+  text: string;
+  timestamp: string;
 }
 
 const rarityColors = {
@@ -58,6 +68,10 @@ const Index = () => {
   const [showSellDialog, setShowSellDialog] = useState(false);
   const [selectedItemForSale, setSelectedItemForSale] = useState<InventoryItem | null>(null);
   const [salePrice, setSalePrice] = useState(0);
+  const [showChatDialog, setShowChatDialog] = useState(false);
+  const [selectedChatItem, setSelectedChatItem] = useState<InventoryItem | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
 
   const cases: CaseItem[] = [
     { id: 1, name: 'Стартовый кейс', rarity: 'common', price: 50, image: '🎁' },
@@ -118,12 +132,47 @@ const Index = () => {
     const marketItem: InventoryItem = {
       ...selectedItemForSale,
       isForSale: true,
-      salePrice: salePrice
+      salePrice: salePrice,
+      seller: username || 'Игрок',
+      sellerId: Date.now(),
+      description: `Эксклюзивный предмет редкости ${selectedItemForSale.rarity}. В отличном состоянии!`
     };
     setMarketItems([...marketItems, marketItem]);
     setBalance(balance + salePrice);
     setShowSellDialog(false);
     setSelectedItemForSale(null);
+  };
+
+  const handleOpenChat = (item: InventoryItem) => {
+    setSelectedChatItem(item);
+    setChatMessages([
+      { id: 1, sender: item.seller || 'Продавец', text: 'Здравствуйте! Интересует этот предмет?', timestamp: new Date().toLocaleTimeString('ru-RU') }
+    ]);
+    setShowChatDialog(true);
+  };
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return;
+    
+    const message: ChatMessage = {
+      id: chatMessages.length + 1,
+      sender: username || 'Вы',
+      text: newMessage,
+      timestamp: new Date().toLocaleTimeString('ru-RU')
+    };
+    
+    setChatMessages([...chatMessages, message]);
+    setNewMessage('');
+
+    setTimeout(() => {
+      const reply: ChatMessage = {
+        id: chatMessages.length + 2,
+        sender: selectedChatItem?.seller || 'Продавец',
+        text: 'Спасибо за интерес! Готов обсудить детали сделки.',
+        timestamp: new Date().toLocaleTimeString('ru-RU')
+      };
+      setChatMessages(prev => [...prev, reply]);
+    }, 1000);
   };
 
   const handleBuyMarketItem = (item: InventoryItem) => {
@@ -152,52 +201,79 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b-2 border-primary/20 bg-gradient-to-r from-card/90 via-card/50 to-card/90 backdrop-blur-md sticky top-0 z-50 shadow-lg">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="text-4xl animate-float">🎮</div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              CaseOpener
-            </h1>
+          <div className="flex items-center gap-3">
+            <div className="text-5xl animate-float drop-shadow-lg">🎮</div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                CaseOpener
+              </h1>
+              <p className="text-xs text-muted-foreground">Открывай. Торгуй. Побеждай.</p>
+            </div>
           </div>
 
-          <nav className="hidden md:flex gap-6">
-            <Button variant="ghost" onClick={() => setActiveTab('cases')}>
+          <nav className="hidden md:flex gap-2">
+            <Button 
+              variant={activeTab === 'cases' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('cases')}
+              className={activeTab === 'cases' ? 'glow-purple' : ''}
+            >
               <Icon name="Package" className="mr-2" size={20} />
               Кейсы
             </Button>
-            <Button variant="ghost" onClick={() => setActiveTab('market')}>
+            <Button 
+              variant={activeTab === 'market' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('market')}
+              className={activeTab === 'market' ? 'glow-pink' : ''}
+            >
               <Icon name="ShoppingCart" className="mr-2" size={20} />
               Маркет
             </Button>
             {isLoggedIn && (
-              <Button variant="ghost" onClick={() => setActiveTab('inventory')}>
-                <Icon name="Archive" className="mr-2" size={20} />
-                Инвентарь
-              </Button>
-            )}
-          </nav>
-
-          <div className="flex items-center gap-4">
-            {isLoggedIn ? (
               <>
-                <div className="flex items-center gap-2 bg-primary/20 px-4 py-2 rounded-lg glow-purple">
-                  <Icon name="Wallet" size={20} className="text-primary" />
-                  <span className="font-semibold">{balance}₽</span>
-                </div>
+                <Button 
+                  variant={activeTab === 'inventory' ? 'default' : 'ghost'}
+                  onClick={() => setActiveTab('inventory')}
+                  className={activeTab === 'inventory' ? 'glow-purple' : ''}
+                >
+                  <Icon name="Archive" className="mr-2" size={20} />
+                  Инвентарь
+                </Button>
                 {isAdmin && (
-                  <Button onClick={() => window.location.href = '/admin'} variant="outline" className="gap-2">
-                    <Icon name="Shield" size={20} />
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.location.href = '/admin'}
+                    className="border-primary/50 hover:bg-primary/20"
+                  >
+                    <Icon name="Shield" className="mr-2" size={20} />
                     Админ
                   </Button>
                 )}
-                <Button onClick={() => setActiveTab('profile')} variant="outline" className="gap-2">
+              </>
+            )}
+          </nav>
+
+          <div className="flex items-center gap-3">
+            {isLoggedIn ? (
+              <>
+                <div className="flex items-center gap-2 bg-gradient-to-r from-primary/30 to-secondary/30 border border-primary/50 px-5 py-2.5 rounded-xl glow-purple backdrop-blur-sm">
+                  <Icon name="Wallet" size={22} className="text-primary" />
+                  <span className="font-bold text-lg">{balance}₽</span>
+                </div>
+                <Button 
+                  onClick={() => setActiveTab('profile')} 
+                  variant="outline" 
+                  className="gap-2 border-primary/50 hover:bg-primary/20"
+                  size="lg"
+                >
                   <Icon name="User" size={20} />
-                  Профиль
+                  <span className="hidden sm:inline">{username || 'Профиль'}</span>
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setShowAuthDialog(true)} className="glow-purple">
+              <Button onClick={() => setShowAuthDialog(true)} className="glow-purple" size="lg">
+                <Icon name="LogIn" className="mr-2" size={20} />
                 Войти
               </Button>
             )}
@@ -217,28 +293,30 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {cases.map((caseItem) => (
                 <Card
                   key={caseItem.id}
-                  className="p-6 hover:scale-105 transition-transform cursor-pointer border-2 hover:border-primary group relative overflow-hidden"
+                  className="p-7 hover:scale-110 transition-all duration-300 cursor-pointer border-2 hover:border-primary group relative overflow-hidden bg-gradient-to-br from-card to-card/50 shadow-xl hover:shadow-2xl"
                   onClick={() => handleOpenCase(caseItem)}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative space-y-4">
-                    <div className="text-6xl text-center animate-float">{caseItem.image}</div>
-                    <div className="space-y-2">
-                      <h3 className="font-bold text-xl text-center">{caseItem.name}</h3>
-                      <Badge className={`${rarityColors[caseItem.rarity]} w-full justify-center`}>
-                        {caseItem.rarity}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+                  <div className="relative space-y-5">
+                    <div className="text-7xl text-center animate-float drop-shadow-2xl">{caseItem.image}</div>
+                    <div className="space-y-3">
+                      <h3 className="font-bold text-2xl text-center group-hover:text-primary transition-colors">{caseItem.name}</h3>
+                      <Badge className={`${rarityColors[caseItem.rarity]} w-full justify-center text-sm py-1.5 shadow-lg`}>
+                        {caseItem.rarity.toUpperCase()}
                       </Badge>
-                      <div className="flex items-center justify-center gap-2 text-lg font-semibold text-primary">
-                        <Icon name="Wallet" size={18} />
-                        {caseItem.price}₽
+                      <div className="flex items-center justify-center gap-2 text-xl font-bold text-primary pt-2">
+                        <Icon name="Wallet" size={20} />
+                        <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{caseItem.price}₽</span>
                       </div>
                     </div>
-                    <Button className="w-full glow-purple" size="lg">
-                      Открыть
+                    <Button className="w-full glow-purple shadow-lg" size="lg">
+                      <Icon name="Sparkles" className="mr-2" size={20} />
+                      Открыть кейс
                     </Button>
                   </div>
                 </Card>
@@ -265,29 +343,52 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {marketItems.map((item) => (
-                  <Card key={item.id} className="p-6 hover:border-primary transition-all hover:scale-105 group">
+                  <Card key={item.id} className="p-6 hover:border-primary transition-all hover:scale-105 group border-2">
                     <div className="space-y-4">
                       <div className="text-center">
                         <div className="text-7xl mb-3 group-hover:scale-110 transition-transform">{item.image}</div>
-                        <Badge className={`${rarityColors[item.rarity]} mb-2`}>
+                        <Badge className={`${rarityColors[item.rarity]} mb-3 text-sm px-3 py-1`}>
                           {item.rarity}
                         </Badge>
-                        <h3 className="font-bold text-xl">{item.name}</h3>
+                        <h3 className="font-bold text-xl mb-2">{item.name}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
                       </div>
                       
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">Цена:</span>
-                          <span className="text-2xl font-bold text-primary">{item.salePrice}₽</span>
+                      <div className="space-y-3 pt-3 border-t border-border">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Icon name="User" size={16} className="text-muted-foreground" />
+                          <span className="text-muted-foreground">Продавец:</span>
+                          <span className="font-semibold">{item.seller}</span>
                         </div>
-                        <Button 
-                          onClick={() => handleBuyMarketItem(item)} 
-                          className="w-full glow-pink"
-                          size="lg"
-                        >
-                          <Icon name="ShoppingBag" className="mr-2" size={18} />
-                          Купить
-                        </Button>
+                        
+                        <div className="flex items-center gap-2 text-sm">
+                          <Icon name="Clock" size={16} className="text-muted-foreground" />
+                          <span className="text-muted-foreground">Выставлен:</span>
+                          <span>{item.obtainedAt}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-2">
+                          <span className="text-sm text-muted-foreground">Цена:</span>
+                          <span className="text-3xl font-bold text-primary">{item.salePrice}₽</span>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => handleOpenChat(item)} 
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            <Icon name="MessageCircle" className="mr-2" size={18} />
+                            Написать
+                          </Button>
+                          <Button 
+                            onClick={() => handleBuyMarketItem(item)} 
+                            className="flex-1 glow-pink"
+                          >
+                            <Icon name="ShoppingBag" className="mr-2" size={18} />
+                            Купить
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </Card>
@@ -547,6 +648,70 @@ const Index = () => {
               <Button onClick={confirmSellItem} className="flex-1 glow-purple">
                 <Icon name="Tag" className="mr-2" size={18} />
                 Выставить
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <Icon name="MessageCircle" size={24} className="text-primary" />
+              <div>
+                <div className="text-xl">Чат с продавцом</div>
+                <div className="text-sm text-muted-foreground font-normal">{selectedChatItem?.seller}</div>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <Card className="p-4 bg-muted/50">
+              <div className="flex gap-3">
+                <div className="text-4xl">{selectedChatItem?.image}</div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold">{selectedChatItem?.name}</h4>
+                    <Badge className={`${rarityColors[selectedChatItem?.rarity || 'common']} text-xs`}>
+                      {selectedChatItem?.rarity}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-2">{selectedChatItem?.description}</p>
+                  <div className="text-xl font-bold text-primary">{selectedChatItem?.salePrice}₽</div>
+                </div>
+              </div>
+            </Card>
+
+            <div className="h-[300px] overflow-y-auto border rounded-lg p-4 space-y-3 bg-muted/20">
+              {chatMessages.map((msg) => (
+                <div 
+                  key={msg.id} 
+                  className={`flex ${msg.sender === (username || 'Вы') ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div className={`max-w-[70%] rounded-lg p-3 ${
+                    msg.sender === (username || 'Вы') 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-card border'
+                  }`}>
+                    <div className="font-semibold text-sm mb-1">{msg.sender}</div>
+                    <div className="text-sm">{msg.text}</div>
+                    <div className="text-xs opacity-70 mt-1">{msg.timestamp}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <Input 
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Напишите сообщение..."
+                className="flex-1"
+              />
+              <Button onClick={handleSendMessage} className="glow-purple">
+                <Icon name="Send" size={18} />
               </Button>
             </div>
           </div>

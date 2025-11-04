@@ -73,17 +73,45 @@
     box-shadow:
       0 0 20px rgba(139, 92, 246, 0.6),
       0 0 40px rgba(139, 92, 246, 0.3);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .glow-purple:hover {
+    box-shadow:
+      0 0 30px rgba(139, 92, 246, 0.8),
+      0 0 60px rgba(139, 92, 246, 0.5);
   }
 
   .glow-pink {
     box-shadow:
       0 0 20px rgba(217, 70, 239, 0.6),
       0 0 40px rgba(217, 70, 239, 0.3);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .glow-pink:hover {
+    box-shadow:
+      0 0 30px rgba(217, 70, 239, 0.8),
+      0 0 60px rgba(217, 70, 239, 0.5);
   }
 
   .glow-orange {
     box-shadow:
       0 0 20px rgba(249, 115, 22, 0.6),
       0 0 40px rgba(249, 115, 22, 0.3);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .glow-orange:hover {
+    box-shadow:
+      0 0 30px rgba(249, 115, 22, 0.8),
+      0 0 60px rgba(249, 115, 22, 0.5);
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
