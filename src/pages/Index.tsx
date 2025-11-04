@@ -40,6 +40,7 @@ const rarityColors = {
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [balance, setBalance] = useState(1000);
   const [selectedCase, setSelectedCase] = useState<CaseItem | null>(null);
@@ -61,8 +62,9 @@ const Index = () => {
     { id: 3, code: 'MEGA100', discount: 100, seller: 'CaseMaster', price: 150 }
   ];
 
-  const handleLogin = () => {
+  const handleLogin = (asAdmin = false) => {
     setIsLoggedIn(true);
+    setIsAdmin(asAdmin);
     setShowAuthDialog(false);
   };
 
@@ -131,6 +133,12 @@ const Index = () => {
                   <Icon name="Wallet" size={20} className="text-primary" />
                   <span className="font-semibold">{balance}₽</span>
                 </div>
+                {isAdmin && (
+                  <Button onClick={() => window.location.href = '/admin'} variant="outline" className="gap-2">
+                    <Icon name="Shield" size={20} />
+                    Админ
+                  </Button>
+                )}
                 <Button onClick={() => setActiveTab('profile')} variant="outline" className="gap-2">
                   <Icon name="User" size={20} />
                   Профиль
@@ -342,8 +350,12 @@ const Index = () => {
                 <Label>Пароль</Label>
                 <Input type="password" placeholder="••••••••" />
               </div>
-              <Button onClick={handleLogin} className="w-full glow-purple">
+              <Button onClick={() => handleLogin(false)} className="w-full glow-purple">
                 Войти
+              </Button>
+              <Button onClick={() => handleLogin(true)} variant="outline" className="w-full">
+                <Icon name="Shield" className="mr-2" size={18} />
+                Войти как админ
               </Button>
             </TabsContent>
             <TabsContent value="register" className="space-y-4">
