@@ -643,6 +643,124 @@ const Index = () => {
             </Card>
           </div>
         )}
+
+        {activeTab === 'admin' && isAdmin && (
+          <div className="space-y-8">
+            <div className="text-center space-y-4">
+              <h2 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Панель администратора
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Управление системой и пользователями
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="p-6 hover:border-primary transition-all">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Icon name="Users" size={24} className="text-primary" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-bold">1</div>
+                      <div className="text-sm text-muted-foreground">Пользователей</div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 hover:border-secondary transition-all">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                      <Icon name="Package" size={24} className="text-secondary" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-bold">{cases.length}</div>
+                      <div className="text-sm text-muted-foreground">Кейсов</div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6 hover:border-accent transition-all">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                      <Icon name="ShoppingBag" size={24} className="text-accent" />
+                    </div>
+                    <div>
+                      <div className="text-3xl font-bold">{marketItems.length}</div>
+                      <div className="text-sm text-muted-foreground">На маркете</div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            <Card className="p-6">
+              <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Icon name="Settings" size={24} />
+                Настройки системы
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <div className="font-semibold">Модерация маркета</div>
+                    <div className="text-sm text-muted-foreground">Проверка предметов перед публикацией</div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    Включено
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <div className="font-semibold">Автоматическое обновление</div>
+                    <div className="text-sm text-muted-foreground">Обновление маркета каждые 30 секунд</div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    Включено
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <div className="font-semibold">Логирование действий</div>
+                    <div className="text-sm text-muted-foreground">Запись всех действий пользователей</div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    Включено
+                  </Button>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h3 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Icon name="Database" size={24} />
+                База данных
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Таблица: market_items</div>
+                  <div className="text-2xl font-bold">{marketItems.length} записей</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Таблица: inventory</div>
+                  <div className="text-2xl font-bold">{inventory.length} записей</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Таблица: chat_messages</div>
+                  <div className="text-2xl font-bold">0 записей</div>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <div className="text-sm text-muted-foreground mb-1">Таблица: users</div>
+                  <div className="text-2xl font-bold">1 записей</div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
       </main>
 
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
@@ -675,8 +793,14 @@ const Index = () => {
               <Button onClick={() => handleLogin('Игрок', false)} className="w-full glow-purple">
                 Войти
               </Button>
-              <div className="text-center text-xs text-muted-foreground">
-                Для входа как админ: admin@caseopener.com / admin123
+              <div className="space-y-2">
+                <Button onClick={() => handleLogin('Админ', true)} variant="outline" className="w-full border-primary/50">
+                  <Icon name="Shield" className="mr-2" size={16} />
+                  Войти как админ (demo)
+                </Button>
+                <div className="text-center text-xs text-muted-foreground">
+                  Для демонстрации: admin@caseopener.com / admin123
+                </div>
               </div>
             </TabsContent>
             <TabsContent value="register" className="space-y-4">
